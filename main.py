@@ -78,7 +78,7 @@ def where_line_crosses_circle(R, angle, num, F, delta):
         x1 = (-2 * k * b + sqrt(D)) / (2 * (k ** 2 + 1))
         x2 = (-2 * k * b - sqrt(D)) / (2 * (k ** 2 + 1))
         return x1, x2
-    return 1
+    return [-1]
 
 
 def rotate_coord(x, y, share):
@@ -175,7 +175,7 @@ def sector(angle, R, F, delta, share):
         while x0 >= x_edge:
             c -= 1
             elems = where_line_crosses_circle(R, angle, c, F, delta)
-            if elems != 1:
+            if elems != [-1]:
                 x0 = max(elems)
             else:
                 break
@@ -193,7 +193,7 @@ def sector(angle, R, F, delta, share):
                     loop_actions.append(abs_visible_vector(*rotate_coord(x0, -sqrt(R ** 2 - x0 ** 2), share)))
             c -= 1
             elems = where_line_crosses_circle(R, angle, c, F, delta)
-            if elems != 1:
+            if elems != [-1]:
                 x1, x2 = where_line_crosses_circle(R, angle, c, F, delta)
                 if x1 < 0 and x2 < 0:
                     break
@@ -205,10 +205,10 @@ def sector(angle, R, F, delta, share):
         elems = where_line_crosses_circle(R, angle, c, F, delta)
         b = b_coef(angle, c, F, delta)
 
-        if elems != 1:
+        if elems != [-1]:
             x1, x2 = elems
 
-        while elems != 1 and ((x1 < 0 and x2 > x_edge) or (x1 > x_edge and x2 < 0)) and 0 >= b >= -R:
+        while elems != [-1] and ((x1 < 0 and x2 > x_edge) or (x1 > x_edge and x2 < 0)) and 0 >= b >= -R:
             x1, x2 = elems
             loop_actions.append(abs_vector(*rotate_coord(0, b, share)))
             x, y = crossed_point_r(angle, c, F, delta)
@@ -224,7 +224,7 @@ def sector(angle, R, F, delta, share):
         while x0 >= x_edge:
             c += 1
             elems = where_line_crosses_circle(R, angle, c, F, delta)
-            if elems != 1:
+            if elems != [-1]:
                 x0 = max(elems)
             else:
                 break
@@ -242,7 +242,7 @@ def sector(angle, R, F, delta, share):
 
             c += 1
             elems = where_line_crosses_circle(R, angle, c, F, delta)
-            if elems != 1:
+            if elems != [-1]:
                 x1, x2 = where_line_crosses_circle(R, angle, c, F, delta)
                 if x1 < 0 and x2 < 0:
                     break
@@ -254,10 +254,10 @@ def sector(angle, R, F, delta, share):
         elems = where_line_crosses_circle(R, angle, c, F, delta)
         b = b_coef(angle, c, F, delta)
 
-        if elems != 1:
+        if elems != [-1]:
             x1, x2 = elems
 
-        while elems != 1 and ((x1 < 0 and x2 > x_edge) or (x1 > x_edge and x2 < 0)) and 0 >= b >= -R:
+        while elems != [-1] and ((x1 < 0 and x2 > x_edge) or (x1 > x_edge and x2 < 0)) and 0 >= b >= -R:
             x1, x2 = elems
             loop_actions.append(abs_vector(*rotate_coord(0, b, share)))
             x, y = crossed_point_r(angle, c, F, delta)
