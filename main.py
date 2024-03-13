@@ -74,14 +74,17 @@ def where_line_crosses_circle(R, angle, num, F, delta):
     b = b_coef(angle, num, F, delta)
     k = k_coef(angle, F)
     D = 4 * ((R ** 2) * (k ** 2 + 1) - b ** 2)
-    x1 = (-2 * k * b + sqrt(D)) / (2 * (k ** 2 + 1))
-    x2 = (-2 * k * b - sqrt(D)) / (2 * (k ** 2 + 1))
-    return x1, x2
+    if D > 0:
+        x1 = (-2 * k * b + sqrt(D)) / (2 * (k ** 2 + 1))
+        x2 = (-2 * k * b - sqrt(D)) / (2 * (k ** 2 + 1))
+        return x1, x2
+    return 1
+
 
 def rotate_coord(x, y, share):
     share = radians(share)
-    x_new = x*cos(share) + y*sin(share)
-    y_new = -sin(share)*x + cos(share)*y
+    x_new = x * cos(share) + y * sin(share)
+    y_new = -sin(share) * x + cos(share) * y
     return x_new, y_new
 
 
@@ -99,74 +102,180 @@ def sector(angle, R, F, delta, share):
     # loop_actions consist of actions for filling a sector
     loop_actions = []
 
-    # k is step of filling process
-    k = 1
-
-    # There are two variants depending on angle between lines' F value: for acute and obtuse angles
-    if F >= 90:
-        # This is an algorithm to fill a space between circle's center and right edge of sector
-        while crossed_point_r(angle, k, F, delta)[0] <= x_edge:
-            # First, find a point of intersection of filling line and circle
-            x1, x2 = where_line_crosses_circle(R, angle, k, F, delta)
-            if x1 > x2:
-                x2_ = x2
-                x2 = x1
-                x1 = x2_
-            if func(0, angle, k, F, delta) < -R:
-                x = x1
-                # Note a point on circle
-                loop_actions.append(abs_vector(*rotate_coord(x, -sqrt(R ** 2 - x ** 2), share)))
-                # Note a point on sector's line
-                args = [elem for elem in crossed_point_r(angle, k, F, delta)] + [share]
-                loop_actions.append(abs_visible_vector(*rotate_coord(*args)))
-                k += 1
-                continue
-            # If there is not a line that connects circle and sector's line, It will a line
-            # that connects a line x = 0 and sector's line:
-            loop_actions.append(abs_vector(*rotate_coord(0, func(0, angle, k, F, delta), share)))
-            args = [elem for elem in crossed_point_r(angle, k, F, delta)] + [share]
-            loop_actions.append(abs_visible_vector(*rotate_coord(*args)))
-            k += 1
-
-        # There is an algorithm to connect two points on the circle, if they exist considering actual conditions
-        while k * delta <= R:
-            print('f')
-            x1, x2 = where_line_crosses_circle(R, angle, k, F, delta)
-            if x1 > x2 or k > 0:
-                x2_ = x2
-                x2 = x1
-                x1 = x2_
-            if 0 < x1 < x2 < x_edge:
-                loop_actions.append(abs_vector(*rotate_coord(x1, -sqrt(R ** 2 - x1 ** 2), share)))
-                loop_actions.append(abs_visible_vector(*rotate_coord(x2, -sqrt(R ** 2 - x2 ** 2), share)))
-                k += 1
-    else:
-        # It's an algorithm for acute angle.
-        while b_coef(angle, k, F, delta) >= -R:
-            x, y = crossed_point_r(angle, k, F, delta)
-            if x <= x_edge:
-                loop_actions.append(abs_vector(*rotate_coord(0, b_coef(angle, k, F, delta), share)))
+    # c is step of filling process
+    c = 1
+    k = k_coef(angle, F)
+    if 0 <= k < 10 ** 5:
+        x0 = 0
+        x, y = crossed_point_r(angle, c, F, delta)
+        b = b_coef(angle, c, F, delta)
+        while 0 >= y >= y_edge:
+            if b >= -R:
+                loop_actions.append(abs_vector(*rotate_coord(0, b, share)))
                 loop_actions.append(abs_visible_vector(*rotate_coord(x, y, share)))
-            x1, x2 = where_line_crosses_circle(R, angle, k, F, delta)
-            if x1 > 0:
-                x = x1
-            elif x2 > 0:
-                x = x2
+            elif where_line_crosses_circle(R, angle, c, F, delta):
+                ans = where_line_crosses_circle(R, angle, c, F, delta)
+                if ans == 1:
+                    break
+                x1, x2 = ans
+                if x1 > 0 and x2 > 0:
+                    x0 = min(x1, x2)
+                else:
+                    x0 = max(x1, x2)
+                if x1 < 0 and x2 < 0:
+                    break
+                loop_actions.append(abs_vector(*rotate_coord(x0, -sqrt(R ** 2 - x0 ** 2), share)))
+                loop_actions.append(abs_visible_vector(*rotate_coord(x, y, share)))
+            c += 1
+            x, y = crossed_point_r(angle, c, F, delta)
+            b = b_coef(angle, c, F, delta)
+
+        while b > -R:
+            ans = where_line_crosses_circle(R, angle, c, F, delta)
+            if ans == 1:
+                break
+            x1, x2 = ans
             if x1 > 0 and x2 > 0:
-                x = min((x1, x2))
-                print(x)
+                x0 = min(x1, x2)
+            else:
+                x0=max(x1, x2)
+
+            loop_actions.append(abs_vector(*rotate_coord(0, b, share)))
+            loop_actions.append(abs_visible_vector(*rotate_coord(x0, -sqrt(R ** 2 - x0 ** 2), share)))
+
+            c += 1
+            b = b_coef(angle, c, F, delta)
+
+        points = where_line_crosses_circle(R, angle, c, F, delta)
+
+        while points != 1 and all([-sqrt(R ** 2 - points[0] ** 2) >= -R, -sqrt(R ** 2 - points[1] ** 2) >= -R,
+                  points[0] <= x_edge, points[1] <= x_edge]):
+            loop_actions.append(abs_vector(*rotate_coord(min(points), -sqrt(R ** 2 - min(points) ** 2), share)))
+            loop_actions.append(
+                abs_visible_vector(*rotate_coord(max(points), -sqrt(R ** 2 - max(points) ** 2), share)))
+            c += 1
+            points = where_line_crosses_circle(R, angle, c, F, delta)
+
+
+
+    elif k > 10 ** 3:
+        x, y = (delta * c, c * delta * tan(pi - (pi / 2 - radians(angle))))
+        while x <= x_edge:
+            loop_actions.append(abs_vector(*rotate_coord(x, -sqrt(R ** 2 - x ** 2), share)))
+            loop_actions.append(abs_visible_vector(*rotate_coord(x, y, share)))
+            c += 1
+            x, y = (delta * c, c * delta * tan(pi - (pi / 2 - radians(angle))))
+
+    else:
+
+        c = -1
+        elems = where_line_crosses_circle(R, angle, c, F, delta)
+        x0 = max(elems)
+
+        while x0 >= x_edge:
+            c -= 1
+            elems = where_line_crosses_circle(R, angle, c, F, delta)
+            if elems != 1:
+                x0 = max(elems)
+            else:
+                break
+
+        while 0 <= x0 <= x_edge:
+            b = b_coef(angle, c, F, delta)
+            if 0 >= b >= -R:
+                loop_actions.append(abs_vector(*rotate_coord(0, b, share)))
+                loop_actions.append(abs_visible_vector(*rotate_coord(x0, -sqrt(R ** 2 - x0 ** 2), share)))
+
+            else:
+                x, y = crossed_point_r(angle, c, F, delta)
+                if 0 <= x <= x_edge:
+                    loop_actions.append(abs_vector(*rotate_coord(x, y, share)))
+                    loop_actions.append(abs_visible_vector(*rotate_coord(x0, -sqrt(R ** 2 - x0 ** 2), share)))
+            c -= 1
+            elems = where_line_crosses_circle(R, angle, c, F, delta)
+            if elems != 1:
+                x1, x2 = where_line_crosses_circle(R, angle, c, F, delta)
+                if x1 < 0 and x2 < 0:
+                    break
+                x0 = max(x1, x2)
+            else:
+                break
+
+        c = -1
+        elems = where_line_crosses_circle(R, angle, c, F, delta)
+        b = b_coef(angle, c, F, delta)
+
+        if elems != 1:
+            x1, x2 = elems
+
+        while elems != 1 and ((x1 < 0 and x2 > x_edge) or (x1 > x_edge and x2 < 0)) and 0 >= b >= -R:
+            x1, x2 = elems
+            loop_actions.append(abs_vector(*rotate_coord(0, b, share)))
+            x, y = crossed_point_r(angle, c, F, delta)
             if x <= x_edge:
-                loop_actions.append(abs_vector(*rotate_coord(x, -sqrt(R ** 2 - x ** 2), share)))
-                loop_actions.append(abs_visible_vector(*rotate_coord(0, b_coef(angle, k, F, delta), share)))
-            k += 1
+                loop_actions.append(abs_visible_vector(*rotate_coord(x, y, share)))
+            p -= 1
+            elems = where_line_crosses_circle(R, angle, c, F, delta)
+
+        c = 0
+        x1, x2 = where_line_crosses_circle(R, angle, c, F, delta)
+        x0 = max(x1, x2)
+
+        while x0 >= x_edge:
+            c += 1
+            elems = where_line_crosses_circle(R, angle, c, F, delta)
+            if elems != 1:
+                x0 = max(elems)
+            else:
+                break
+
+        while 0 <= x0 <= x_edge:
+            b = b_coef(angle, c, F, delta)
+            if 0 >= b >= -R:
+                loop_actions.append(abs_vector(*rotate_coord(0, b, share)))
+                loop_actions.append(abs_visible_vector(*rotate_coord(x0, -sqrt(R ** 2 - x0 ** 2), share)))
+            else:
+                x, y = crossed_point_r(angle, c, F, delta)
+                if 0 <= x <= x_edge:
+                    loop_actions.append(abs_vector(*rotate_coord(x, y, share)))
+                    loop_actions.append(abs_visible_vector(*rotate_coord(x0, -sqrt(R ** 2 - x0 ** 2), share)))
+
+            c += 1
+            elems = where_line_crosses_circle(R, angle, c, F, delta)
+            if elems != 1:
+                x1, x2 = where_line_crosses_circle(R, angle, c, F, delta)
+                if x1 < 0 and x2 < 0:
+                    break
+                x0 = max(x1, x2)
+            else:
+                break
+
+        c = 0
+        elems = where_line_crosses_circle(R, angle, c, F, delta)
+        b = b_coef(angle, c, F, delta)
+
+        if elems != 1:
+            x1, x2 = elems
+
+        while elems != 1 and ((x1 < 0 and x2 > x_edge) or (x1 > x_edge and x2 < 0)) and 0 >= b >= -R:
+            x1, x2 = elems
+            loop_actions.append(abs_vector(*rotate_coord(0, b, share)))
+            x, y = crossed_point_r(angle, c, F, delta)
+            if x <= x_edge:
+                loop_actions.append(abs_visible_vector(*rotate_coord(x, y, share)))
+            c += 1
+            elems = where_line_crosses_circle(R, angle, c, F, delta)
+            b = b_coef(angle, c, F, delta)
+
     return first_actions + ''.join(loop_actions)
+
 
 def main(R, A, B, H, F, N, file_name='minimarker_script.lsc'):
     with open(file_name, 'w') as file:
 
-        share = 360/N
-        share_f = (B - A)/N
-        share_p = (100-10)/N
+        share = 360 / N
+        share_f = (B - A) / N
+        share_p = (100 - 10) / N
 
         file.write(to_decart())
         file.write(circle(R))
@@ -176,18 +285,15 @@ def main(R, A, B, H, F, N, file_name='minimarker_script.lsc'):
             file.write(power(power_step))
             if power_step + share_p < 100:
                 power_step += share_p
-            file.write(sector(share, R, F, filling_step, i*share))
+            file.write(sector(share, R, F, filling_step, i * share))
             filling_step += share_f
 
 
 R = float(input('Радиус R: '))
-A = float(input('Нижняя граница мощности заливки A: '))
-B = float(input('Верхняя граница мощности заливки B: '))
-H = float(input('Шаг роста мощности заливки H: '))
+A = float(input('Нижняя граница шага заливки A: '))
+B = float(input('Верхняя граница шага заливки B: '))
+H = float(input('Шаг роста шага заливки H: '))
 F = float(input('Угол заливки относительно биссектрисы (в градусах) F: '))
 N = int(input('Число секторов N: '))
 
 main(R, A, B, H, F, N)
-
-
-
