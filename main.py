@@ -3,35 +3,36 @@ from math import *
 
 # Commands "imported" from laser's soft
 def abs_visible_vector(x, y):
-    return 'VAA {0}, {1}\n'.format(x, y)
+    return 'VAA {0}, {1}\n'.format(x, y)         #return 'Line(0, 0, {0}, {1})\n'.format(x, y) ?
 
 
 def visible_vector(dx, dy):
-    return 'VAR {0}, {1}\n'.format(dx, dy)
+    return 'VAR {0}, {1}\n'.format(dx, dy)    # в процессе
 
 
 def abs_vector(x, y):
-    return 'VPA {0}, {1}\n'.format(x, y)
+    return 'VPA {0}, {1}\n'.format(x, y)      # в процессе
 
 
 def vector(dx, dy):
-    return 'VPR {0}, {1}\n'.format(dx, dy)
+    return 'VPR {0}, {1}\n'.format(dx, dy)   # в процессе
 
 
 def circle(R: float):
-    return 'CIRCLE {0}\n'.format(R)
+    return 'CIRCLE {0}\n'.format(R)           # return 'Ellipse(0, 0, {0}, {0})\n'.format(R)
 
 
 def to_decart():
-    return 'AXMODE "LH"\nMOVER 0, 0\n'
+    return 'AXMODE "LH"\nMOVER 0, 0\n'        # return 'CoordinateSystemMode("LH") \nMoveTo(0,0,0)\n'
 
 
 def power(val):
-    return 'POWER {}\n'.format(val)
+    return 'POWER {}\n'.format(val)           # return 'LaserMode(Режим по умолчанию, 0, 0, {0})\n'.format(val)
 
 
 def rotate(R, angle):
-    return 'AXMODE RF\nMOVER {0}, {1}\nRFROTATE 1\n'.format(R, angle)
+    return 'AXMODE RF\nMOVER {0}, {1}\nRFROTATE 1\n'.format(R, angle)  # return 'CoordinateSystemMode("RF") \nMoveTo({0},{1},0) \nAbsoluteAngle(1)\n'.format(R, angle)
+
 
 
 def k_coef(angle, F):
