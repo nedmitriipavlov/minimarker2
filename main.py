@@ -3,7 +3,7 @@ from math import *
 
 # Commands "imported" from laser's soft
 def abs_visible_vector(x, y):
-    return 'VAA {0}, {1}\n'.format(x, y)         #return 'Line(0, 0, {0}, {1})\n'.format(x, y) ?
+    return ' {0}, {1})\n'.format(x, y)         #return 'Line(0, 0, {0}, {1})\n'.format(x, y) ?
 
 
 def visible_vector(dx, dy):
@@ -11,27 +11,27 @@ def visible_vector(dx, dy):
 
 
 def abs_vector(x, y):
-    return 'VPA {0}, {1}\n'.format(x, y)      # в процессе
+   return 'Line({0}, {1},'.format(x, y)      # в процессе
 
 
 def vector(dx, dy):
-    return 'VPR {0}, {1}\n'.format(dx, dy)   # в процессе
+    return 'Line({0}, {1},'.format(dx, dy)   # в процессе
 
 
 def circle(R: float):
-    return 'CIRCLE {0}\n'.format(R)           # return 'Ellipse(0, 0, {0}, {0})\n'.format(R)
+    return 'Ellipse(0, 0, {0}, {0})\n'.format(R)          # return 'Ellipse(0, 0, {0}, {0})\n'.format(R)
 
 
 def to_decart():
-    return 'AXMODE "LH"\nMOVER 0, 0\n'        # return 'CoordinateSystemMode("LH") \nMoveTo(0,0,0)\n'
+    return 'CoordinateSystemMode("LH") \nMoveTo(0,0,0)\n'        # return 'CoordinateSystemMode("LH") \nMoveTo(0,0,0)\n'
 
 
 def power(val):
-    return 'POWER {}\n'.format(val)           # return 'LaserMode(Режим по умолчанию, 0, 0, {0})\n'.format(val)
+    return 'LaserMode(Режим по умолчанию, 0, 0, {0})\n'.format(val)        # return 'LaserMode(Режим по умолчанию, 0, 0, {0})\n'.format(val)
 
 
 def rotate(R, angle):
-    return 'AXMODE RF\nMOVER {0}, {1}\nRFROTATE 1\n'.format(R, angle)  # return 'CoordinateSystemMode("RF") \nMoveTo({0},{1},0) \nAbsoluteAngle(1)\n'.format(R, angle)
+    return 'CoordinateSystemMode("RF") \nMoveTo({0},{1},0) \nAbsoluteAngle(1)\n'.format(R, angle)  # return 'CoordinateSystemMode("RF") \nMoveTo({0},{1},0) \nAbsoluteAngle(1)\n'.format(R, angle)
 
 
 
@@ -95,10 +95,10 @@ def sector(angle, R, F, delta, share):
     x_edge = R * sin(radians(angle))
     y_edge = - R * cos(radians(angle))
     # first actions are actions to create a circle a sector without filling
-    first_actions = '{0}\n{1}\n{2}\n{3}\n'.format(abs_vector(*rotate_coord(0, -R, share)),
+    first_actions = '{0}{1}{2}{3}\n'.format(abs_vector(*rotate_coord(0, -R, share)),
                                                   abs_visible_vector(0, 0),
-                                                  abs_visible_vector(*rotate_coord(x_edge, y_edge, share)),
-                                                  abs_vector(0, 0)
+                                                  abs_vector(*rotate_coord(x_edge, y_edge, share)),
+                                                  abs_visible_vector(0, 0)
                                                   )
     # loop_actions consist of actions for filling a sector
     loop_actions = []
@@ -149,7 +149,7 @@ def sector(angle, R, F, delta, share):
 
         points = where_line_crosses_circle(R, angle, c, F, delta)
 
-        while points != 1 and all([-sqrt(R ** 2 - points[0] ** 2) >= -R, -sqrt(R ** 2 - points[1] ** 2) >= -R,
+        while len(points) > 1 and all([-sqrt(R ** 2 - points[0] ** 2) >= -R, -sqrt(R ** 2 - points[1] ** 2) >= -R,
                   points[0] <= x_edge, points[1] <= x_edge]):
             loop_actions.append(abs_vector(*rotate_coord(min(points), -sqrt(R ** 2 - min(points) ** 2), share)))
             loop_actions.append(
