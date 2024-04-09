@@ -3,7 +3,7 @@ from math import *
 
 # Commands "imported" from laser's soft
 def abs_visible_vector(x, y):
-    return ' {0}, {1})\n'.format(x, y)         #return 'Line(0, 0, {0}, {1})\n'.format(x, y) ?
+    return ' {0}, {1}, OwnMode0)\n'.format(x, y)         #return 'Line(0, 0, {0}, {1})\n'.format(x, y) ?
 
 
 def visible_vector(dx, dy):
@@ -268,7 +268,7 @@ def sector(angle, R, F, delta, share):
             elems = where_line_crosses_circle(R, angle, c, F, delta)
             b = b_coef(angle, c, F, delta)
 
-    return first_actions + ''.join(loop_actions)
+    return 'Dynamics(Средняя, Средняя)\n' + first_actions + ''.join(loop_actions)
 
 
 def main(R, A, B, H, F, N, file_name='minimarker_script.lsc'):
